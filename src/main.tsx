@@ -12,10 +12,16 @@ import SearchPage from '@/pages/SearchPage';
 import SeriesPage from '@/pages/SeriesPage';
 import MoviePage from '@/pages/MoviePage';
 import WatchPage from '@/pages/WatchPage';
+import { ScrollToTop } from './components/ScrollToTop';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <>
+        <ScrollToTop />
+        <App />
+      </>
+    ),
     errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <HomePage /> },

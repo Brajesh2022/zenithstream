@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { HomeApiResponse, SearchApiResponse, Series, Movie } from '@shared/types';
+import { HomeApiResponse, SearchApiResponse, Series, Movie, EpisodeApiResponse } from '@shared/types';
 const API_BASE_URL = '/api/v1';
 async function fetcher<T>(endpoint: string): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${endpoint}`);
@@ -46,4 +46,11 @@ export function useSeasonData(url: string) {
         queryFn: () => fetcher<Series>(`/content?tool=series&url=${encodeURIComponent(url)}`),
         enabled: !!url,
     });
+}
+export function useEpisodeData(url: string) {
+  return useQuery<EpisodeApiResponse>({
+    queryKey: ['episode', url],
+    queryFn: () => fetcher<EpisodeApiResponse>(`/content?tool=episode&url=${encodeURIComponent(url)}`),
+    enabled: !!url,
+  });
 }
