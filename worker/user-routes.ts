@@ -1,75 +1,52 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { UserEntity, ChatBoardEntity } from "./entities";
-import { ok, bad, notFound, isStr } from './core-utils';
-
+import { ok, bad } from './core-utils';
+const API_BASE_URL = 'https://animeh.brajeshcodes.workers.dev';
+async function proxyRequest(tool: string, url: string | undefined) {
+  if (!url) {
+    return { error: 'URL query parameter is required', status: 400 };
+  }
+  try {
+    const encodedUrl = encodeURIComponent(url);
+    const targetUrl = `${API_BASE_URL}/api/parse/${tool}?url=${encodedUrl}`;
+    const response = await fetch(targetUrl, {
+      headers: { 'User-Agent': 'ZenithStream-Worker/1.0' }
+    });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[PROXY ERROR] Tool: ${tool}, URL: ${url}, Status: ${response.status}, Body: ${errorText}`);
+      return { error: `Failed to fetch from upstream API: ${response.statusText}`, status: response.status };
+    }
+    const data = await response.json();
+    return { data };
+  } catch (e) {
+    console.error(`[PROXY CATCH] Tool: ${tool}, URL: ${url}, Error: ${e}`);
+    return { error: 'An internal error occurred', status: 500 };
+  }
+}
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  app.get('/api/test', (c) => c.json({ success: true, data: { name: 'CF Workers Demo' }}));
-
-  // USERS
-  app.get('/api/users', async (c) => {
-    await UserEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await UserEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
+  const v1 = new Hono<{ Bindings: Env }>();
+  v1.get('/home', async (c) => {
+    const url = c.req.query('url');
+    const { data, error, status } = await proxyRequest('home', url);
+    if (error) return bad(c, error);
+    return ok(c, data);
   });
-
-  app.post('/api/users', async (c) => {
-    const { name } = (await c.req.json()) as { name?: string };
-    if (!name?.trim()) return bad(c, 'name required');
-    return ok(c, await UserEntity.create(c.env, { id: crypto.randomUUID(), name: name.trim() }));
+  v1.get('/search', async (c) => {
+    const url = c.req.query('url');
+    const { data, error, status } = await proxyRequest('search', url);
+    if (error) return bad(c, error);
+    return ok(c, data);
   });
-
-  // CHATS
-  app.get('/api/chats', async (c) => {
-    await ChatBoardEntity.ensureSeed(c.env);
-    const cq = c.req.query('cursor');
-    const lq = c.req.query('limit');
-    const page = await ChatBoardEntity.list(c.env, cq ?? null, lq ? Math.max(1, (Number(lq) | 0)) : undefined);
-    return ok(c, page);
+  v1.get('/content', async (c) => {
+    const url = c.req.query('url');
+    const tool = c.req.query('tool');
+    if (!tool || !['series', 'movie', 'episode'].includes(tool)) {
+      return bad(c, 'Invalid or missing tool parameter. Must be one of: series, movie, episode.');
+    }
+    const { data, error, status } = await proxyRequest(tool, url);
+    if (error) return bad(c, error);
+    return ok(c, data);
   });
-
-  app.post('/api/chats', async (c) => {
-    const { title } = (await c.req.json()) as { title?: string };
-    if (!title?.trim()) return bad(c, 'title required');
-    const created = await ChatBoardEntity.create(c.env, { id: crypto.randomUUID(), title: title.trim(), messages: [] });
-    return ok(c, { id: created.id, title: created.title });
-  });
-
-  // MESSAGES
-  app.get('/api/chats/:chatId/messages', async (c) => {
-    const chat = new ChatBoardEntity(c.env, c.req.param('chatId'));
-    if (!await chat.exists()) return notFound(c, 'chat not found');
-    return ok(c, await chat.listMessages());
-  });
-
-  app.post('/api/chats/:chatId/messages', async (c) => {
-    const chatId = c.req.param('chatId');
-    const { userId, text } = (await c.req.json()) as { userId?: string; text?: string };
-    if (!isStr(userId) || !text?.trim()) return bad(c, 'userId and text required');
-    const chat = new ChatBoardEntity(c.env, chatId);
-    if (!await chat.exists()) return notFound(c, 'chat not found');
-    return ok(c, await chat.sendMessage(userId, text.trim()));
-  });
-
-  // DELETE: Users
-  app.delete('/api/users/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await UserEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/users/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await UserEntity.deleteMany(c.env, list), ids: list });
-  });
-
-  // DELETE: Chats
-  app.delete('/api/chats/:id', async (c) => ok(c, { id: c.req.param('id'), deleted: await ChatBoardEntity.delete(c.env, c.req.param('id')) }));
-
-  app.post('/api/chats/deleteMany', async (c) => {
-    const { ids } = (await c.req.json()) as { ids?: string[] };
-    const list = ids?.filter(isStr) ?? [];
-    if (list.length === 0) return bad(c, 'ids required');
-    return ok(c, { deletedCount: await ChatBoardEntity.deleteMany(c.env, list), ids: list });
-  });
+  app.route('/api/v1', v1);
 }

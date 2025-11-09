@@ -1,31 +1,33 @@
 import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
 enableMapSet();
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
-import '@/index.css'
-import { HomePage } from '@/pages/HomePage'
-
+import '@/index.css';
+import App from './App';
+import { HomePage } from '@/pages/HomePage';
+import SearchPage from '@/pages/SearchPage';
+import SeriesPage from '@/pages/SeriesPage';
+import MoviePage from '@/pages/MoviePage';
+import WatchPage from '@/pages/WatchPage';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomePage />,
+    element: <App />,
     errorElement: <RouteErrorBoundary />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: "search/:query", element: <SearchPage /> },
+      { path: "series/:id", element: <SeriesPage /> },
+      { path: "movie/:id", element: <MoviePage /> },
+      { path: "watch/:id", element: <WatchPage /> },
+    ],
   },
 ]);
-
-// Do not touch this code
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>
-  </StrictMode>,
-)
-   
+  <React.StrictMode>
+    <RouterProvider router={router} />
+  </React.StrictMode>
+);
