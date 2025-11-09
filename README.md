@@ -1,6 +1,6 @@
 # ZenithStream
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Brajesh2022/zenithstream)
 
 ZenithStream is a futuristic, top-tier anime streaming and information platform designed to provide a visually stunning and functionally superior user experience, akin to Netflix. The application is powered by a client-provided API, proxied through Cloudflare Workers for security and performance. The entire application features a sleek, modern dark theme, emphasizing high-quality visuals and intuitive navigation.
 
@@ -93,4 +93,4 @@ This project is designed for seamless deployment to Cloudflare Pages.
 
 Or deploy directly with the button below:
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Brajesh2022/zenithstream)
