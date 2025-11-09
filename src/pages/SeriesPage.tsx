@@ -33,7 +33,7 @@ const SeriesPageSkeleton = () => (
 export default function SeriesPage() {
   const { id } = useParams<{ id: string }>();
   const decodedId = id ? decodeUrl(id) : '';
-  const { data: initialSeries, isLoading: isLoadingInitial, error: initialError } = useSeriesData(decodedId);
+  const { data: initialSeries, isLoading: isLoadingInitial, error: initialError } = useSeriesData(decodedId, true);
   const [selectedSeason, setSelectedSeason] = useState<Season | null>(null);
   const [displayedEpisodes, setDisplayedEpisodes] = useState<Episode[]>([]);
   const seasonUrlToFetch = useMemo(() => {
@@ -43,7 +43,7 @@ export default function SeriesPage() {
     if (!seriesSlug || !firstEpisodeInRange) return null;
     return `https://animesalt.cc/episode/${seriesSlug}-${selectedSeason.seasonNumber}x${firstEpisodeInRange}/`;
   }, [selectedSeason, decodedId]);
-  const { data: seasonData, isLoading: isLoadingSeason, error: seasonError } = useSeasonData(seasonUrlToFetch || '');
+  const { data: seasonData, isLoading: isLoadingSeason, error: seasonError } = useSeasonData(seasonUrlToFetch || '', !!seasonUrlToFetch);
   useEffect(() => {
     if (initialSeries?.seasons?.[0]) {
       setSelectedSeason(initialSeries.seasons[0]);

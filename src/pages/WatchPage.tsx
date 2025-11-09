@@ -35,7 +35,7 @@ export default function WatchPage() {
   const decodedId = id ? decodeUrl(id) : '';
   const decodedContentUrl = contentUrl ? decodeUrl(contentUrl) : '';
   const [currentIframeUrl, setCurrentIframeUrl] = useState<string | null>(decodedId);
-  const { data: movieData, isLoading: isLoadingMovie } = useMovieData(decodedContentUrl);
+  const { data: movieData, isLoading: isLoadingMovie } = useMovieData(decodedContentUrl, type === 'movie');
   const { data: episodeData, isLoading: isLoadingEpisode, error: episodeError } = useEpisodeData(decodedId);
   const isLoading = (type === 'movie' && isLoadingMovie) || (type === 'series' && isLoadingEpisode);
   const data = type === 'movie' ? movieData : episodeData;

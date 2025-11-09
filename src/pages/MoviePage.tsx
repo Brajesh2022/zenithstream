@@ -32,7 +32,7 @@ const MoviePageSkeleton = () => (
 export default function MoviePage() {
   const { id } = useParams<{ id: string }>();
   const decodedId = id ? decodeUrl(id) : '';
-  const { data: movie, isLoading, error } = useMovieData(decodedId);
+  const { data: movie, isLoading, error } = useMovieData(decodedId, true);
   if (isLoading) return <MoviePageSkeleton />;
   if (error) {
     return (

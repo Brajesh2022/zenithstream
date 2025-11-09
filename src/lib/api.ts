@@ -26,21 +26,21 @@ export function useSearchData(query: string) {
     enabled: !!query,
   });
 }
-export function useSeriesData(url: string) {
+export function useSeriesData(url: string, enabled: boolean = true) {
   return useQuery<Series>({
     queryKey: ['series', url],
     queryFn: () => fetcher<Series>(`/content?tool=series&url=${encodeURIComponent(url)}`),
-    enabled: !!url,
+    enabled: !!url && enabled,
   });
 }
-export function useMovieData(url: string) {
+export function useMovieData(url: string, enabled: boolean = true) {
   return useQuery<Movie>({
     queryKey: ['movie', url],
     queryFn: () => fetcher<Movie>(`/content?tool=movie&url=${encodeURIComponent(url)}`),
-    enabled: !!url,
+    enabled: !!url && enabled,
   });
 }
-export function useSeasonData(url: string) {
+export function useSeasonData(url: string, enabled: boolean = true) {
     return useQuery<Series>({
         queryKey: ['season', url],
         queryFn: () => fetcher<Series>(`/content?tool=series&url=${encodeURIComponent(url)}`),
